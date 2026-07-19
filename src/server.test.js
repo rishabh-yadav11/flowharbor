@@ -9,17 +9,27 @@ describe("GET /health", () => {
   });
 });
 
-describe("GET /", () => {
+describe("GET /api/greet", () => {
   test("greets with a query name", async () => {
-    const res = await request(app).get("/?name=Rishabh");
+    const res = await request(app).get("/api/greet?name=Rishabh");
     expect(res.statusCode).toBe(200);
     expect(res.text).toBe("Hello, Rishabh!");
   });
 
   test("defaults to World with no name", async () => {
-    const res = await request(app).get("/");
+    const res = await request(app).get("/api/greet");
     expect(res.statusCode).toBe(200);
     expect(res.text).toBe("Hello, World!");
+  });
+});
+describe("GET /api/info", () => {
+  test("returns build info with local defaults", async () => {
+    const res = await request(app).get("/api/info");
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("environment");
+    expect(res.body).toHaveProperty("buildNumber");
+    expect(res.body).toHaveProperty("commit");
+    expect(res.body).toHaveProperty("deployedAt");
   });
 });
 
