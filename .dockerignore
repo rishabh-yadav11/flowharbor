@@ -1,0 +1,5 @@
+.git
+Jenkinsfile
+README.md
+*.md
+docker-compose.yml
