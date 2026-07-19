@@ -1,4 +1,4 @@
-const { greet, add, isPalindrome } = require('../logic');
+const { greet, add, isPalindrome } = require('./logic');
 
 describe('greet', () => {
   test('greets a given name', () => {

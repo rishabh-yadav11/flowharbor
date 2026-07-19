@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../server');
+const app = require('./server');
 
 describe('GET /health', () => {
   test('returns 200 and status ok', async () => {
