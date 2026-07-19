@@ -17,7 +17,7 @@ app.get("/api/info", (req, res) => {
 });
 
 app.get("/api/greet", (req, res) => {
-  res.status(200).send(greet(req.query.name));
+  res.status(200).json({ message: greet(req.query.name) });
 });
 
 app.post("/add", (req, res) => {

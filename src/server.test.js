@@ -9,12 +9,19 @@ describe("GET /health", () => {
   });
 });
 
-describe("GET /api/greet", () => {
-  test("greets with a query name", async () => {
-    const res = await request(app).get("/api/greet?name=Rishabh");
+describe('GET /api/greet', () => {
+  test('greets with a query name', async () => {
+    const res = await request(app).get('/api/greet?name=Rishabh');
     expect(res.statusCode).toBe(200);
-    expect(res.text).toBe("Hello, Rishabh!");
+    expect(res.body).toEqual({ message: 'Hello, Rishabh!' });
   });
+
+  test('defaults to World with no name', async () => {
+    const res = await request(app).get('/api/greet');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ message: 'Hello, World!' });
+  });
+});
 
   test("defaults to World with no name", async () => {
     const res = await request(app).get("/api/greet");
