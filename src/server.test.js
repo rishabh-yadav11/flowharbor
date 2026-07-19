@@ -21,7 +21,7 @@ describe('GET /api/greet', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({ message: 'Hello, World!' });
   });
-});
+
 
   test("defaults to World with no name", async () => {
     const res = await request(app).get("/api/greet");
