@@ -7,8 +7,8 @@
  * Returns a greeting for a given name. Falls back to "World" if no name given.
  */
 function greet(name) {
-  const trimmed = (name || '').trim();
-  if (!trimmed) return 'Hello, World!';
+  const trimmed = (name || "").trim();
+  if (!trimmed) return "Hello, World!";
   return `Hello, ${trimmed}!`;
 }
 
@@ -16,8 +16,13 @@ function greet(name) {
  * Adds two numbers. Throws if inputs aren't numbers.
  */
 function add(a, b) {
-  if (typeof a !== 'number' || typeof b !== 'number' || Number.isNaN(a) || Number.isNaN(b)) {
-    throw new TypeError('add() requires two numbers');
+  if (
+    typeof a !== "number" ||
+    typeof b !== "number" ||
+    Number.isNaN(a) ||
+    Number.isNaN(b)
+  ) {
+    throw new TypeError("add() requires two numbers");
   }
   return a + b;
 }
@@ -26,9 +31,22 @@ function add(a, b) {
  * Returns true if the given string is a palindrome (ignoring case and spaces).
  */
 function isPalindrome(str) {
-  if (typeof str !== 'string') return false;
-  const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, '');
-  return cleaned === cleaned.split('').reverse().join('');
+  if (typeof str !== "string") return false;
+  const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return cleaned === cleaned.split("").reverse().join("");
 }
 
-module.exports = { greet, add, isPalindrome };
+/**
+ * Builds a deploy-info object from environment variables.
+ * Pure function (takes env as a param) so it's trivial to unit test.
+ */
+function getBuildInfo(env) {
+  return {
+    environment: env.APP_ENV || "local",
+    buildNumber: env.BUILD_NUMBER || "n/a",
+    commit: env.GIT_COMMIT ? env.GIT_COMMIT.substring(0, 7) : "n/a",
+    deployedAt: env.DEPLOYED_AT || new Date().toISOString(),
+  };
+}
+
+module.exports = { greet, add, isPalindrome, getBuildInfo };

@@ -1,20 +1,26 @@
-const express = require('express');
-const { greet, add, isPalindrome } = require('./logic');
+const path = require("path");
+const express = require("express");
+const { greet, add, isPalindrome, getBuildInfo } = require("./logic");
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 // Health check — useful for load balancers, uptime checks, and later
 // pipeline improvements (e.g. "wait for healthy" before promoting a deploy).
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
-app.get('/', (req, res) => {
+app.get("/api/info", (req, res) => {
+  res.status(200).json(getBuildInfo(process.env));
+});
+
+app.get("/api/greet", (req, res) => {
   res.status(200).send(greet(req.query.name));
 });
 
-app.post('/add', (req, res) => {
+app.post("/add", (req, res) => {
   const { a, b } = req.body || {};
   try {
     const result = add(Number(a), Number(b));
@@ -24,7 +30,7 @@ app.post('/add', (req, res) => {
   }
 });
 
-app.get('/palindrome/:word', (req, res) => {
+app.get("/palindrome/:word", (req, res) => {
   res.status(200).json({
     word: req.params.word,
     isPalindrome: isPalindrome(req.params.word),

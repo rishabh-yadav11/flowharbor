@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>FlowHarbor Demo</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 20px; color: #222; }
+  .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+  .badge.local { background: #eee; color: #555; }
+  .badge.testing { background: #fff3cd; color: #856404; }
+  .badge.staging { background: #cce5ff; color: #004085; }
+  .badge.production { background: #d4edda; color: #155724; }
+  section { margin-bottom: 24px; padding: 16px; border: 1px solid #ddd; border-radius: 8px; }
+  h2 { margin-top: 0; font-size: 16px; }
+  input { padding: 6px 8px; margin-right: 6px; }
+  button { padding: 6px 14px; cursor: pointer; }
+  pre { background: #f7f7f7; padding: 8px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>FlowHarbor</h1>
+  <div id="badge" class="badge local">loading build info…</div>
+
+  <section>
+    <h2>Greet</h2>
+    <input id="nameInput" placeholder="Your name" />
+    <button onclick="doGreet()">Greet</button>
+    <pre id="greetOut"></pre>
+  </section>
+
+  <section>
+    <h2>Add</h2>
+    <input id="aInput" placeholder="a" style="width:60px" />
+    <input id="bInput" placeholder="b" style="width:60px" />
+    <button onclick="doAdd()">Add</button>
+    <pre id="addOut"></pre>
+  </section>
+
+  <section>
+    <h2>Palindrome Check</h2>
+    <input id="palInput" placeholder="word or phrase" />
+    <button onclick="doPalindrome()">Check</button>
+    <pre id="palOut"></pre>
+  </section>
+
+<script>
+  async function loadInfo() {
+    const res = await fetch('/api/info');
+    const info = await res.json();
+    const badge = document.getElementById('badge');
+    badge.textContent = `${info.environment.toUpperCase()} · build #${info.buildNumber} · ${info.commit}`;
+    badge.className = 'badge ' + info.environment;
+  }
+  async function doGreet() {
+    const name = document.getElementById('nameInput').value;
+    const res = await fetch('/api/greet?name=' + encodeURIComponent(name));
+    const data = await res.json();
+    document.getElementById('greetOut').textContent = data.message;
+  }
+  async function doAdd() {
+    const a = document.getElementById('aInput').value;
+    const b = document.getElementById('bInput').value;
+    const res = await fetch('/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ a, b }),
+    });
+    const data = await res.json();
+    document.getElementById('addOut').textContent = JSON.stringify(data);
+  }
+  async function doPalindrome() {
+    const word = document.getElementById('palInput').value;
+    const res = await fetch('/palindrome/' + encodeURIComponent(word));
+    const data = await res.json();
+    document.getElementById('palOut').textContent = JSON.stringify(data);
+  }
+  loadInfo();
+</script>
+</body>
+</html>
