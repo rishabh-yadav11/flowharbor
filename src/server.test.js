@@ -21,14 +21,8 @@ describe('GET /api/greet', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({ message: 'Hello, World!' });
   });
-
-
-  test("defaults to World with no name", async () => {
-    const res = await request(app).get("/api/greet");
-    expect(res.statusCode).toBe(200);
-    expect(res.text).toBe("Hello, World!");
-  });
 });
+
 describe("GET /api/info", () => {
   test("returns build info with local defaults", async () => {
     const res = await request(app).get("/api/info");
