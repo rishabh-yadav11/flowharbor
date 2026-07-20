@@ -314,4 +314,4 @@ pipeline {
             sh 'rm -f image.tar.gz'
         }
     }
-}
+}2
