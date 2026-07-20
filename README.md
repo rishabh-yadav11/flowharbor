@@ -69,8 +69,6 @@ Deployment is SSH-only; the private server has no public IP or inbound internet 
 
 ## Roadmap
 
-- HTTPS via Let's Encrypt
-- Webhook-based Jenkins triggers (replace polling)
 - Image scanning (Trivy, Hadolint)
 - Observability: Prometheus, Grafana, Loki, Alertmanager
 - Infrastructure as Code: Terraform, Ansible
