@@ -4,7 +4,7 @@ pipeline {
     environment {
         ECR_URI      = "766037821505.dkr.ecr.ap-south-1.amazonaws.com/flowharbor-app"
         AWS_REGION   = "ap-south-1"
-        CLUSTER      = "flowharbor-cluster"
+        CLUSTER      = "flowharbor-cluster-aws"
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
     }
 
