@@ -1,20 +1,16 @@
 pipeline {
     agent { label 'docker-build' }
-
     environment {
         ECR_URI      = "766037821505.dkr.ecr.ap-south-1.amazonaws.com/flowharbor-app"
         AWS_REGION   = "ap-south-1"
         CLUSTER      = "flowharbor-cluster-aws"
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
     }
-
     options {
         timestamps()
         disableConcurrentBuilds()
     }
-
     stages {
-
         stage('Verify Branch') {
             steps {
                 script {
@@ -25,13 +21,11 @@ pipeline {
                 }
             }
         }
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Build Image') {
             steps {
                 sh """
@@ -39,7 +33,6 @@ pipeline {
                 """
             }
         }
-
         stage('Push to ECR (testing)') {
             steps {
                 sh """
@@ -48,22 +41,40 @@ pipeline {
                 """
             }
         }
+        stage('Register Task Def (testing)') {
+            steps {
+                sh """
+                    aws ecs describe-task-definition \
+                      --task-definition flowharbor-testing \
+                      --region ${AWS_REGION} \
+                      --query 'taskDefinition' > taskdef-testing.json
 
+                    jq --arg IMAGE "${ECR_URI}:testing-${IMAGE_TAG}" '
+                      .containerDefinitions[0].image = \$IMAGE
+                      | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                            .compatibilities, .registeredAt, .registeredBy, .tags)
+                    ' taskdef-testing.json > new-taskdef-testing.json
+
+                    aws ecs register-task-definition \
+                      --region ${AWS_REGION} \
+                      --cli-input-json file://new-taskdef-testing.json
+                """
+            }
+        }
         stage('Deploy to Testing') {
             steps {
                 sh """
-                    aws ecs update-service --cluster ${CLUSTER} --service svc-testing --force-new-deployment --region ${AWS_REGION}
+                    aws ecs update-service --cluster ${CLUSTER} --service svc-testing \
+                      --task-definition flowharbor-testing --region ${AWS_REGION}
                     aws ecs wait services-stable --cluster ${CLUSTER} --services svc-testing --region ${AWS_REGION}
                 """
             }
         }
-
         stage('Approval: Staging') {
             steps {
                 input message: "Deploy build #${IMAGE_TAG} to staging?", ok: 'Deploy'
             }
         }
-
         stage('Promote & Push to ECR (staging)') {
             steps {
                 sh """
@@ -72,22 +83,40 @@ pipeline {
                 """
             }
         }
+        stage('Register Task Def (staging)') {
+            steps {
+                sh """
+                    aws ecs describe-task-definition \
+                      --task-definition flowharbor-staging \
+                      --region ${AWS_REGION} \
+                      --query 'taskDefinition' > taskdef-staging.json
 
+                    jq --arg IMAGE "${ECR_URI}:staging-${IMAGE_TAG}" '
+                      .containerDefinitions[0].image = \$IMAGE
+                      | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                            .compatibilities, .registeredAt, .registeredBy, .tags)
+                    ' taskdef-staging.json > new-taskdef-staging.json
+
+                    aws ecs register-task-definition \
+                      --region ${AWS_REGION} \
+                      --cli-input-json file://new-taskdef-staging.json
+                """
+            }
+        }
         stage('Deploy to Staging') {
             steps {
                 sh """
-                    aws ecs update-service --cluster ${CLUSTER} --service svc-staging --force-new-deployment --region ${AWS_REGION}
+                    aws ecs update-service --cluster ${CLUSTER} --service svc-staging \
+                      --task-definition flowharbor-staging --region ${AWS_REGION}
                     aws ecs wait services-stable --cluster ${CLUSTER} --services svc-staging --region ${AWS_REGION}
                 """
             }
         }
-
         stage('Approval: Production') {
             steps {
                 input message: "Deploy build #${IMAGE_TAG} to production?", ok: 'Deploy'
             }
         }
-
         stage('Promote & Push to ECR (production)') {
             steps {
                 sh """
@@ -96,17 +125,36 @@ pipeline {
                 """
             }
         }
+        stage('Register Task Def (production)') {
+            steps {
+                sh """
+                    aws ecs describe-task-definition \
+                      --task-definition flowharbor-production \
+                      --region ${AWS_REGION} \
+                      --query 'taskDefinition' > taskdef-production.json
 
+                    jq --arg IMAGE "${ECR_URI}:prod-${IMAGE_TAG}" '
+                      .containerDefinitions[0].image = \$IMAGE
+                      | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                            .compatibilities, .registeredAt, .registeredBy, .tags)
+                    ' taskdef-production.json > new-taskdef-production.json
+
+                    aws ecs register-task-definition \
+                      --region ${AWS_REGION} \
+                      --cli-input-json file://new-taskdef-production.json
+                """
+            }
+        }
         stage('Deploy to Production') {
             steps {
                 sh """
-                    aws ecs update-service --cluster ${CLUSTER} --service svc-production --force-new-deployment --region ${AWS_REGION}
+                    aws ecs update-service --cluster ${CLUSTER} --service svc-production \
+                      --task-definition flowharbor-production --region ${AWS_REGION}
                     aws ecs wait services-stable --cluster ${CLUSTER} --services svc-production --region ${AWS_REGION}
                 """
             }
         }
     }
-
     post {
         success {
             echo "Pipeline completed successfully for build #${IMAGE_TAG}"
