@@ -1,7 +1,0 @@
-.git
-node_modules
-Jenkinsfile
-README.md
-*.md
-docker-compose.yml
-coverage
